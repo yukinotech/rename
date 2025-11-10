@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "outDir": "dist",
+    "types": ["node"]
+  },
+  "include": ["src/main", "src/preload", "src/agent"]
+}
