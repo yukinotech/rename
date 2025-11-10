@@ -2,7 +2,7 @@ export {}; // ensures this file is treated as a module
 
 declare global {
   interface AgentRunOptions {
-    provider?: 'openai' | 'ollama';
+    provider?: "openai" | "ollama";
     model?: string;
     base?: string;
   }

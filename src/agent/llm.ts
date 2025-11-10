@@ -1,4 +1,4 @@
-import { createParser } from 'eventsource-parser';
+import { createParser } from "eventsource-parser";
 
 export interface ParsedChunk {
   text: string;
@@ -12,19 +12,24 @@ export function parseOpenAIChunk(data: string): ParsedChunk | null {
     return null;
   }
 
-  if (data.trim() === '[DONE]') {
-    return { text: '', done: true, event: 'done' };
+  if (data.trim() === "[DONE]") {
+    return { text: "", done: true, event: "done" };
   }
 
   const json = JSON.parse(data);
   const delta = json?.choices?.[0]?.delta;
-  const text = typeof delta?.content === 'string' ? delta.content : Array.isArray(delta?.content)
-    ? delta.content.map((part: { text?: string }) => part?.text ?? '').join('')
-    : '';
+  const text =
+    typeof delta?.content === "string"
+      ? delta.content
+      : Array.isArray(delta?.content)
+      ? delta.content
+          .map((part: { text?: string }) => part?.text ?? "")
+          .join("")
+      : "";
 
   return {
     text,
-    raw: json
+    raw: json,
   };
 }
 
@@ -35,9 +40,9 @@ export function parseOllamaLine(line: string): ParsedChunk | null {
 
   const json = JSON.parse(line);
   return {
-    text: json?.response ?? '',
+    text: json?.response ?? "",
     done: Boolean(json?.done),
-    raw: json
+    raw: json,
   };
 }
 
@@ -48,18 +53,18 @@ export async function* streamFromOpenAI(
   signal?: AbortSignal
 ): AsyncGenerator<ParsedChunk> {
   const queue: ParsedChunk[] = [];
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
       model,
       stream: true,
-      messages: [{ role: 'user', content: prompt }]
+      messages: [{ role: "user", content: prompt }],
     }),
-    signal
+    signal,
   });
 
   if (!response.ok || !response.body) {
@@ -68,7 +73,7 @@ export async function* streamFromOpenAI(
   }
 
   const parser = createParser((event) => {
-    if (event.type !== 'event') return;
+    if (event.type !== "event") return;
     const parsed = parseOpenAIChunk(event.data);
     if (parsed) {
       queue.push(parsed);
@@ -93,11 +98,11 @@ export async function* streamFromOllama(
   model: string,
   signal?: AbortSignal
 ): AsyncGenerator<ParsedChunk> {
-  const response = await fetch(new URL('/api/generate', base).toString(), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+  const response = await fetch(new URL("/api/generate", base).toString(), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ model, prompt, stream: true }),
-    signal
+    signal,
   });
 
   if (!response.ok || !response.body) {
@@ -106,12 +111,12 @@ export async function* streamFromOllama(
   }
 
   const decoder = new TextDecoder();
-  let buffer = '';
+  let buffer = "";
 
   for await (const chunk of response.body as unknown as AsyncIterable<Uint8Array>) {
     buffer += decoder.decode(chunk, { stream: true });
-    const lines = buffer.split('\n');
-    buffer = lines.pop() ?? '';
+    const lines = buffer.split("\n");
+    buffer = lines.pop() ?? "";
 
     for (const line of lines) {
       const trimmed = line.trim();

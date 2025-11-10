@@ -14,7 +14,7 @@ Create `.env` based on `.env.example`:
 OPENAI_API_KEY=sk-...
 OPENAI_MODEL=gpt-4o-mini
 OLLAMA_BASE=http://127.0.0.1:11434
-OLLAMA_MODEL=llama3.1
+OLLAMA_MODEL=qwen3:8b
 ```
 OpenAI keys are loaded only inside the Electron main process.
 
